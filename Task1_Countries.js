@@ -16,18 +16,29 @@ async function searchByName(name) {
 }
 
 async function searchByCapital(capital) {
-    const countries = await fetchCountries();
-    const country = countries.countries.country.find(country => country.capital === capital);
+    const {countries} = await fetchCountries();
+    const country = countries.country.find(country => country.capital === capital);
     return country;
 }
 
 async function getCurrencyCodesV1() {
-    const countries = await fetchCountries();
-    const currencyCodes = countries.countries.country
+    const {countries} = await fetchCountries();
+    const currencyCodes = countries.country
     .map(country => ({currencyCode:country.currencyCode}));
+    
+    let uniqueCurrencyCodes = [1];
+    let codesHashTable = {};
 
-    return currencyCodes.filter((code,index) => currencyCodes.indexOf(code) === index);
-};
+    currencyCodes.forEach(code => {
+        if(codesHashTable[code.currencyCode] == null)
+        {
+            codesHashTable[code.currencyCode] = true;
+            uniqueCurrencyCodes.push(code.currencyCode);
+        }
+    });
+    
+    return uniqueCurrencyCodes;
+}
 
 async function getCurrencyCodesV2() {
     const countries = await fetchCountries();
@@ -35,7 +46,19 @@ async function getCurrencyCodesV2() {
     .map(country => ({currencyCode:country.currencyCode}));
 
     return new Set(currencyCodes);
-};
+}
+
+async function searchPartiallyByName(name) {
+    const {countries} = await fetchCountries();
+    let matchedCountries = [];
+
+    for(let i = 0; i < countries.country.length; i++) {
+        if(countries.country[i].countryName.includes(name))
+            matchedCountries.push((countries.country[i].countryName));
+    }
+
+    return matchedCountries;
+}
 
 searchByName('Andorra la Vella')
 .then(country => {
@@ -60,7 +83,7 @@ searchByCapital('Andorra la Vella')
 });
 
 getCurrencyCodesV1().
-then(currencyCodes => console.log(currencyCodes.size));
+then(x => console.log(x.length));
 
 getCurrencyCodesV2().
 then(currencyCodes => console.log(currencyCodes.size));
