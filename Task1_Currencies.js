@@ -16,10 +16,16 @@ async function fetchCurrencies() {
 async function searchByName(name) {
     try {
         const currencies = await fetchCurrencies();
-        const currency = Object.values(currencies).find(currency => currency.name === name)
-        if (currency === undefined)
+        let currencyFound;
+        for(let currency in currencies) {
+            if(currencies[currency].name === name)
+                currencyFound = currencies[currency];
+        }
+
+        if (currencyFound === undefined) {
             throw Error('Currency Not Found');
-        return currency;
+        }
+        return currencyFound;
     } catch (error) {
         console.error('Error ocurred while search', error);
         throw error;
@@ -40,7 +46,7 @@ async function searchByCode(code) {
     }
 }
 
-async function getCurrencies() {
+async function getCurrenciesNameAndCode() {
     const currencies = await fetchCurrencies();
 
     return Object.values(currencies).map(
@@ -63,11 +69,11 @@ async function getCurrenciesPage(pageNumber, elementsPerPage) {
 }
 
 //Client Code
-searchByName('Eurmmo')
+searchByName('Euro')
     .then(currency => console.log(JSON.stringify(currency)))
     .catch(err => console.log(err));
 
-getCurrencies()
+getCurrenciesNameAndCode()
     .then(currenciesDTOs => currenciesDTOs.forEach(currencyDTO => {
         console.log(JSON.stringify(currencyDTO));
     }));
