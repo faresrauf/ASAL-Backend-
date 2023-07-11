@@ -3,27 +3,41 @@ const CURRENCY_API_URL = process.env.CURRENCY_API_URL;
 
 
 async function fetchCurrencies() {
-    const currenciesResponse = await fetch(CURRENCY_API_URL);
-     currencies = await currenciesResponse.json();
-     return currencies;
+    try {
+        const currenciesResponse = await fetch(CURRENCY_API_URL);
+        const currencies = await currenciesResponse.json();
+        return currencies;
+    } catch (error) {
+        console.error('Error ocurred while fetching currencies from API', error);
+        throw error;
+    }
 }
 
 async function searchByName(name) {
-    const currencies = await fetchCurrencies();
-     for (const currency of Object.values(currencies))
-        if(currency.name == name)
-            return currency;
-
-    return 'Currency Not Found';
+    try {
+        const currencies = await fetchCurrencies();
+        const currency = Object.values(currencies).find(currency => currency.name === name)
+        if (currency === undefined)
+            throw Error('Currency Not Found');
+        return currency;
+    } catch (error) {
+        console.error('Error ocurred while search', error);
+        throw error;
+    }
 }
 
 async function searchByCode(code) {
-    const currencies = await fetchCurrencies();
-     for (const currency of Object.values(currencies))
-        if(currency.code == code)
-            return currency;
+    try {
+        const currencies = await fetchCurrencies();
+        for (const currency of Object.values(currencies))
+            if (currency.code == code)
+                return currency;
 
-    return 'Currency Not Found';
+        throw Error('Currency Not Found');
+    } catch (error) {
+        console.error('Error ocurred while search', error);
+        throw error;
+    }
 }
 
 async function getCurrencies() {
@@ -36,12 +50,12 @@ async function getCurrencies() {
         }));
 }
 
-async function getCurrenciesPage(pageNumber,elementsPerPage) {
+async function getCurrenciesPage(pageNumber, elementsPerPage) {
     const currencies = await fetchCurrencies();
     const start = (pageNumber - 1) * elementsPerPage;
     const end = start + elementsPerPage;
 
-    return Object.values(currencies).slice(start,end).map(
+    return Object.values(currencies).slice(start, end).map(
         currency => ({
             name: currency.name,
             code: currency.code
@@ -49,17 +63,18 @@ async function getCurrenciesPage(pageNumber,elementsPerPage) {
 }
 
 //Client Code
-searchByName('Euro')
-.then(currency=> console.log(JSON.stringify(currency)));
+searchByName('Eurmmo')
+    .then(currency => console.log(JSON.stringify(currency)))
+    .catch(err => console.log(err));
 
 getCurrencies()
-.then(currenciesDTOs => currenciesDTOs.forEach(currencyDTO => {
-    console.log(JSON.stringify(currencyDTO));
-}));
+    .then(currenciesDTOs => currenciesDTOs.forEach(currencyDTO => {
+        console.log(JSON.stringify(currencyDTO));
+    }));
 
-getCurrenciesPage(1,5)
-.then(currenciesDTOs => currenciesDTOs.forEach(currencyDTO => {
-    console.log(JSON.stringify(currencyDTO));
-}));
+getCurrenciesPage(1, 5)
+    .then(currenciesDTOs => currenciesDTOs.forEach(currencyDTO => {
+        console.log(JSON.stringify(currencyDTO));
+    }));
 
 module.exports.searchByCode = searchByCode;
